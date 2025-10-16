@@ -1,0 +1,72 @@
+[
+  {
+    "_id": "c001",
+    "name": "Fruits & Vegetables",
+    "description": "Fresh fruits, vegetables, and organic produce.",
+    "parentCategoryId": null,
+    "image": "brandImage/fruits_veggies.jpg"
+  },
+  {
+    "_id": "c002",
+    "name": "Dairy & Bakery",
+    "description": "Milk, cheese, butter, curd, and baked goods.",
+    "parentCategoryId": null,
+    "image": "brandImage/dairy_bakery.jpg"
+  },
+  {
+    "_id": "c003",
+    "name": "Staples & Grains",
+    "description": "Rice, flour, pulses, sugar, and oils.",
+    "parentCategoryId": null,
+    "image": "brandImage/staples.jpg"
+  },
+  {
+    "_id": "c004",
+    "name": "Snacks & Branded Foods",
+    "description": "Chips, biscuits, chocolates, and ready-to-eat snacks.",
+    "parentCategoryId": null,
+    "image": "brandImage/snacks.jpg"
+  },
+  {
+    "_id": "c005",
+    "name": "Beverages",
+    "description": "Tea, coffee, juices, and soft drinks.",
+    "parentCategoryId": null,
+    "image": "brandImage/beverages.jpg"
+  },
+  {
+    "_id": "c006",
+    "name": "Personal Care",
+    "description": "Shampoo, soap, toothpaste, and skincare products.",
+    "parentCategoryId": null,
+    "image": "brandImage/personal_care.jpg"
+  },
+  {
+    "_id": "c007",
+    "name": "Household & Cleaning",
+    "description": "Detergents, cleaners, and home care items.",
+    "parentCategoryId": null,
+    "image": "brandImage/household.jpg"
+  },
+  {
+    "_id": "c008",
+    "name": "Pet Supplies",
+    "description": "Food and accessories for pets.",
+    "parentCategoryId": null,
+    "image": "brandImage/pets.jpg"
+  },
+  {
+    "_id": "c009",
+    "name": "Baby Care",
+    "description": "Baby food, diapers, and skincare.",
+    "parentCategoryId": null,
+    "image": "brandImage/baby_care.jpg"
+  },
+  {
+    "_id": "c010",
+    "name": "Spices & Masalas",
+    "description": "Indian spices and masalas for cooking.",
+    "parentCategoryId": null,
+    "image": "brandImage/spices.jpg"
+  }
+]

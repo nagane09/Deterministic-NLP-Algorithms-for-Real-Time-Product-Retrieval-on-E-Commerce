@@ -1,0 +1,326 @@
+[
+  {
+    "_id": "b001",
+    "name": "Amul",
+    "logo": "amul_logo.png",
+    "description": "Leading Indian dairy brand offering milk, butter, and cheese products.",
+    "country": "India",
+    "foundedYear": 1946,
+    "website": "https://amul.com"
+  },
+  {
+    "_id": "b002",
+    "name": "Mother Dairy",
+    "logo": "mother_dairy_logo.png",
+    "description": "Popular Indian dairy cooperative known for milk and ice creams.",
+    "country": "India",
+    "foundedYear": 1974,
+    "website": "https://motherdairy.com"
+  },
+  {
+    "_id": "b003",
+    "name": "Britannia",
+    "logo": "britannia_logo.png",
+    "description": "Well-known bakery and dairy brand offering biscuits, cakes, and breads.",
+    "country": "India",
+    "foundedYear": 1892,
+    "website": "https://britannia.co.in"
+  },
+  {
+    "_id": "b004",
+    "name": "Nestlé",
+    "logo": "nestle_logo.png",
+    "description": "Global food and beverage leader with brands like Maggi, Nescafé, and Milkmaid.",
+    "country": "Switzerland",
+    "foundedYear": 1866,
+    "website": "https://www.nestle.com"
+  },
+  {
+    "_id": "b005",
+    "name": "Aashirvaad",
+    "logo": "aashirvaad_logo.png",
+    "description": "Brand offering premium quality atta, salt, and spices.",
+    "country": "India",
+    "foundedYear": 2002,
+    "website": "https://aashirvaad.com"
+  },
+  {
+    "_id": "b006",
+    "name": "Fortune",
+    "logo": "fortune_logo.png",
+    "description": "Adani Wilmar’s brand for edible oils, atta, rice, and pulses.",
+    "country": "India",
+    "foundedYear": 2000,
+    "website": "https://www.fortunefoods.com"
+  },
+  {
+    "_id": "b007",
+    "name": "Tata Sampann",
+    "logo": "tata_sampann_logo.png",
+    "description": "Tata brand known for spices, pulses, and staples with natural goodness.",
+    "country": "India",
+    "foundedYear": 2015,
+    "website": "https://www.tatasampann.com"
+  },
+  {
+    "_id": "b008",
+    "name": "Everest",
+    "logo": "everest_logo.png",
+    "description": "India’s leading spice brand offering a wide range of blended masalas.",
+    "country": "India",
+    "foundedYear": 1967,
+    "website": "https://www.everestspices.com"
+  },
+  {
+    "_id": "b009",
+    "name": "Haldiram's",
+    "logo": "haldiram_logo.png",
+    "description": "Iconic Indian snack brand offering sweets, namkeen, and ready-to-eat meals.",
+    "country": "India",
+    "foundedYear": 1937,
+    "website": "https://www.haldirams.com"
+  },
+  {
+    "_id": "b010",
+    "name": "Colgate",
+    "logo": "colgate_logo.png",
+    "description": "Leading brand in oral care products like toothpaste and mouthwash.",
+    "country": "USA",
+    "foundedYear": 1873,
+    "website": "https://www.colgate.com"
+  },
+  {
+    "_id": "b011",
+    "name": "Daawat",
+    "logo": "daawat_logo.png",
+    "description": "Premium basmati rice brand known for quality and aroma.",
+    "country": "India",
+    "foundedYear": 1987,
+    "website": "https://www.daawat.com"
+  },
+  {
+    "_id": "b012",
+    "name": "India Gate",
+    "logo": "indiagate_logo.png",
+    "description": "Leading Indian brand offering different varieties of basmati rice.",
+    "country": "India",
+    "foundedYear": 1996,
+    "website": "https://www.indiagatefoods.com"
+  },
+  {
+    "_id": "b013",
+    "name": "Lays",
+    "logo": "lays_logo.png",
+    "description": "Famous potato chips brand by PepsiCo.",
+    "country": "USA",
+    "foundedYear": 1932,
+    "website": "https://www.lays.com"
+  },
+  {
+    "_id": "b014",
+    "name": "Parle",
+    "logo": "parle_logo.png",
+    "description": "Iconic Indian brand known for biscuits, snacks, and confectionery.",
+    "country": "India",
+    "foundedYear": 1929,
+    "website": "https://www.parleproducts.com"
+  },
+  {
+    "_id": "b015",
+    "name": "Bikaji",
+    "logo": "bikaji_logo.png",
+    "description": "Leading Indian brand for traditional snacks and namkeen.",
+    "country": "India",
+    "foundedYear": 1987,
+    "website": "https://www.bikaji.com"
+  },
+  {
+    "_id": "b016",
+    "name": "Maggi",
+    "logo": "maggi_logo.png",
+    "description": "Instant noodle and food brand under Nestlé India.",
+    "country": "Switzerland",
+    "foundedYear": 1884,
+    "website": "https://www.maggi.in"
+  },
+  {
+    "_id": "b017",
+    "name": "Tropicana",
+    "logo": "tropicana_logo.png",
+    "description": "Popular juice and beverage brand known for fruit-based drinks.",
+    "country": "USA",
+    "foundedYear": 1947,
+    "website": "https://www.tropicana.com"
+  },
+  {
+    "_id": "b018",
+    "name": "Real",
+    "logo": "real_logo.png",
+    "description": "Dabur’s fruit juice brand offering a variety of flavors.",
+    "country": "India",
+    "foundedYear": 1996,
+    "website": "https://www.realfruitpower.com"
+  },
+  {
+    "_id": "b019",
+    "name": "Surf Excel",
+    "logo": "surf_excel_logo.png",
+    "description": "Trusted detergent brand by Unilever for powerful stain removal.",
+    "country": "India",
+    "foundedYear": 1959,
+    "website": "https://www.surfexcel.in"
+  },
+  {
+    "_id": "b020",
+    "name": "Vim",
+    "logo": "vim_logo.png",
+    "description": "Dishwashing brand offering bars, liquids, and gels.",
+    "country": "India",
+    "foundedYear": 1993,
+    "website": "https://www.vim.in"
+  },
+  {
+    "_id": "b021",
+    "name": "Lizol",
+    "logo": "lizol_logo.png",
+    "description": "Disinfectant cleaner brand under Reckitt Benckiser.",
+    "country": "UK",
+    "foundedYear": 1889,
+    "website": "https://www.lizol.in"
+  },
+  {
+    "_id": "b022",
+    "name": "Harpic",
+    "logo": "harpic_logo.png",
+    "description": "Brand for toilet cleaning and sanitation products.",
+    "country": "UK",
+    "foundedYear": 1935,
+    "website": "https://www.harpic.co.in"
+  },
+  {
+    "_id": "b023",
+    "name": "Ariel",
+    "logo": "ariel_logo.png",
+    "description": "Laundry detergent brand by Procter & Gamble.",
+    "country": "USA",
+    "foundedYear": 1967,
+    "website": "https://www.ariel.in"
+  },
+  {
+    "_id": "b024",
+    "name": "Dettol",
+    "logo": "dettol_logo.png",
+    "description": "Antiseptic and hygiene brand under Reckitt Benckiser.",
+    "country": "UK",
+    "foundedYear": 1932,
+    "website": "https://www.dettol.co.in"
+  },
+  {
+    "_id": "b025",
+    "name": "Himalaya",
+    "logo": "himalaya_logo.png",
+    "description": "Ayurvedic brand offering personal care and wellness products.",
+    "country": "India",
+    "foundedYear": 1930,
+    "website": "https://www.himalayawellness.in"
+  },
+  {
+    "_id": "b026",
+    "name": "Dove",
+    "logo": "dove_logo.png",
+    "description": "Global personal care brand under Unilever.",
+    "country": "UK",
+    "foundedYear": 1957,
+    "website": "https://www.dove.com"
+  },
+  {
+    "_id": "b027",
+    "name": "Patanjali",
+    "logo": "patanjali_logo.png",
+    "description": "Indian brand known for ayurvedic food, personal care, and wellness products.",
+    "country": "India",
+    "foundedYear": 2006,
+    "website": "https://www.patanjaliayurved.net"
+  },
+  {
+    "_id": "b028",
+    "name": "Catch",
+    "logo": "catch_logo.png",
+    "description": "Premium Indian brand for spices, masalas, and beverages.",
+    "country": "India",
+    "foundedYear": 1987,
+    "website": "https://www.catchfoods.com"
+  },
+  {
+    "_id": "b029",
+    "name": "Everest",
+    "logo": "everest_logo.png",
+    "description": "India’s top spice brand known for blended masalas.",
+    "country": "India",
+    "foundedYear": 1967,
+    "website": "https://www.everestspices.com"
+  },
+  {
+    "_id": "b030",
+    "name": "Tata Tea",
+    "logo": "tatatea_logo.png",
+    "description": "Popular Indian tea brand offering strong and aromatic blends.",
+    "country": "India",
+    "foundedYear": 1962,
+    "website": "https://www.tatatea.com"
+  },
+  {
+    "_id": "b031",
+    "name": "Bru",
+    "logo": "bru_logo.png",
+    "description": "Instant coffee brand under Hindustan Unilever.",
+    "country": "India",
+    "foundedYear": 1968,
+    "website": "https://www.brucoffee.in"
+  },
+  {
+    "_id": "b032",
+    "name": "Red Label",
+    "logo": "redlabel_logo.png",
+    "description": "Trusted tea brand known for its rich taste and strong flavor.",
+    "country": "India",
+    "foundedYear": 1969,
+    "website": "https://www.redlabeltea.com"
+  },
+  {
+    "_id": "b033",
+    "name": "Pedigree",
+    "logo": "pedigree_logo.png",
+    "description": "Leading pet food brand for dogs under Mars Petcare.",
+    "country": "USA",
+    "foundedYear": 1957,
+    "website": "https://www.pedigree.in"
+  },
+  {
+    "_id": "b034",
+    "name": "Whiskas",
+    "logo": "whiskas_logo.png",
+    "description": "Cat food brand offering meals and treats under Mars Petcare.",
+    "country": "UK",
+    "foundedYear": 1958,
+    "website": "https://www.whiskas.in"
+  },
+  {
+    "_id": "b035",
+    "name": "Johnson’s Baby",
+    "logo": "johnson_baby_logo.png",
+    "description": "Trusted baby care brand offering gentle products for infants.",
+    "country": "USA",
+    "foundedYear": 1893,
+    "website": "https://www.johnsonsbaby.in"
+  },
+  {
+    "_id": "b036",
+    "name": "Pampers",
+    "logo": "pampers_logo.png",
+    "description": "Leading diaper brand by Procter & Gamble.",
+    "country": "USA",
+    "foundedYear": 1961,
+    "website": "https://www.pampers.in"
+  }
+]
