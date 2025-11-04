@@ -16,7 +16,6 @@ import cartRoute from './routes/cartRoute.js';
 import orderRoute from './routes/orderRoutes.js';
 import paymentRoute from './routes/paymentRoutes.js';
 import reviewRoute from './routes/reviewRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -44,7 +43,6 @@ app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
 app.use("/api/payment", paymentRoute);
 app.use("/api/review", reviewRoute);
-app.use("/api/ai", aiRoutes);
 app.use("/uploads", express.static("uploads"));
 
 
