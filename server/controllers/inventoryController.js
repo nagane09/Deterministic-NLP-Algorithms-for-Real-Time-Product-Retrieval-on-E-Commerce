@@ -2,18 +2,15 @@ import Inventory from "../models/Inventory.js";
 import Product from "../models/Product.js";
 import Variant from "../models/Variant.js";
 
-// ✅ Add or Update Inventory
 export const addOrUpdateInventory = async (req, res) => {
   try {
     const { productId, variantId, currentStock, minimumLevel } = req.body;
 
-    // Validate product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.json({ success: false, message: "Product not found!" });
     }
 
-    // If variantId is provided, check it too
     if (variantId) {
       const variant = await Variant.findById(variantId);
       if (!variant) {
@@ -21,7 +18,6 @@ export const addOrUpdateInventory = async (req, res) => {
       }
     }
 
-    // Check if inventory already exists for product (and variant)
     const existingInventory = await Inventory.findOne({ productId, variantId });
 
     if (existingInventory) {
@@ -33,7 +29,6 @@ export const addOrUpdateInventory = async (req, res) => {
       return res.json({ success: true, message: "Inventory updated successfully!", inventory: existingInventory });
     }
 
-    // Otherwise, create new
     const newInventory = await Inventory.create({
       productId,
       variantId,
@@ -49,7 +44,6 @@ export const addOrUpdateInventory = async (req, res) => {
   }
 };
 
-// ✅ Get All Inventory
 export const getAllInventory = async (req, res) => {
   try {
     const inventory = await Inventory.find({})
@@ -63,7 +57,6 @@ export const getAllInventory = async (req, res) => {
   }
 };
 
-// ✅ Get Inventory by Product
 export const getInventoryByProduct = async (req, res) => {
   try {
     const { productId } = req.params;

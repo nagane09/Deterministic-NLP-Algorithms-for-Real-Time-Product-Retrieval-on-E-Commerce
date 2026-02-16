@@ -1,53 +1,51 @@
 import Review from "../models/Review.js";
 import Product from "../models/Product.js";
 
-// 🟢 Create a new review
 export const createReview = async (req, res) => {
   try {
-    const userId = req.user.id; // from JWT
+    const userId = req.userId; 
     const { productId, rating, comment } = req.body;
 
-    // 1️⃣ Check if product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 2️⃣ Check if user already reviewed this product
     const existingReview = await Review.findOne({ productId, userId });
     if (existingReview) {
-      return res.status(400).json({ message: "You already reviewed this product" });
+      return res.status(400).json({
+        message: "You already reviewed this product",
+      });
     }
 
-    // 3️⃣ Create review
-    const review = new Review({
+    const review = await Review.create({
       productId,
       userId,
       rating,
       comment,
     });
 
-    await review.save();
-
-    // 4️⃣ Optionally update product's average rating
     const reviews = await Review.find({ productId });
     const avgRating =
-      reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
     product.averageRating = avgRating;
     await product.save();
 
     res.status(201).json({
-      message: "Review added successfully",
+      success: true,
+      message: "Review added",
       review,
     });
   } catch (error) {
-    console.error("Error creating review:", error);
-    res.status(500).json({ message: "Internal Server Error", error });
+    res.status(500).json({
+      success: false,
+      message: "Error creating review",
+    });
   }
 };
 
-// 🟡 Get all reviews for a product
+
 export const getProductReviews = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -62,10 +60,9 @@ export const getProductReviews = async (req, res) => {
   }
 };
 
-// 🟣 Update a review
 export const updateReview = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId;
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
 
@@ -85,10 +82,9 @@ export const updateReview = async (req, res) => {
   }
 };
 
-// 🔴 Delete a review
 export const deleteReview = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId;
     const { reviewId } = req.params;
 
     const review = await Review.findOneAndDelete({ _id: reviewId, userId });

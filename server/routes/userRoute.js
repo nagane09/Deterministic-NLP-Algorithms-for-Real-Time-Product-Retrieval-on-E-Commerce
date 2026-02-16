@@ -8,5 +8,7 @@ userRouter.post('/register',register)
 userRouter.post('/login',login)
 userRouter.get('/is-auth',authUser,isAuth)
 userRouter.get('/logout',authUser,logout)
+userRouter.get('/me', authUser, isAuth);
+
 
 export default userRouter;

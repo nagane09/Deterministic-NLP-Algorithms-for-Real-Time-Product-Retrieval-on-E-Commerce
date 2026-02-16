@@ -33,8 +33,31 @@ const productSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Variant"
     }
-  ]
+  ],
+  averageRating: {
+    type: Number,
+    default: 0
+  }
 }, { timestamps: true });
 
-const Product = mongoose.model("Product", productSchema);
+
+productSchema.index({ 
+  name: 'text', 
+  description: 'text', 
+  tags: 'text' 
+}, {
+  weights: {
+    name: 10,       
+    tags: 5,        
+    description: 1  
+  },
+  name: "ProductSearchIndex"
+});
+
+productSchema.index({ categoryId: 1, price: 1 });
+
+
+
+const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
+
 export default Product;

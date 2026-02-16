@@ -1,149 +1,129 @@
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
+import Inventory from "../models/Inventory.js";
+import Variant from "../models/Variant.js";
 
-// 🛒 Add Item to Cart
 export const addToCart = async (req, res) => {
   try {
-    const { userId, productId, variantId, quantity } = req.body;
+    const { productId, variantId, quantity } = req.body;
+    const userId = req.userId;
+
+    const inventory = await Inventory.findOne({ 
+      productId, 
+      variantId: variantId || null 
+    });
+
+    if (!inventory || inventory.currentStock < quantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${inventory ? inventory.currentStock : 0} items left in stock.`,
+      });
+    }
 
     const product = await Product.findById(productId).populate("offerId");
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+    let finalPrice = product.price;
+    if (variantId) {
+      const variant = await Variant.findById(variantId);
+      if (variant) finalPrice = variant.price;
     }
 
-    const price = variantId ? product.variants.find(v => v._id.toString() === variantId)?.price || product.price : product.price;
-
-    // ✅ Apply discount if available and valid
-    let finalPrice = price;
+    let discountAmount = 0;
     if (product.offerId) {
-      const offer = product.offerId;
-      const now = new Date();
-
-      if (now >= new Date(offer.validFrom) && now <= new Date(offer.validTo)) {
-        if (offer.type === "percentage") {
-          finalPrice = price - (price * offer.value) / 100;
-        } else if (offer.type === "fixed") {
-          finalPrice = price - offer.value;
-        }
-        if (finalPrice < 0) finalPrice = 0;
-      }
+      const discount = product.offerId;
+      discountAmount = discount.type === "percentage" 
+        ? (finalPrice * discount.value) / 100 
+        : discount.value;
     }
 
-    const subtotal = finalPrice * quantity;
+    const discountedPrice = Math.max(finalPrice - discountAmount, 0);
+    const subtotal = discountedPrice * quantity;
 
     let cart = await Cart.findOne({ userId });
+    if (!cart) cart = new Cart({ userId, items: [] });
 
-    if (!cart) {
-      cart = await Cart.create({
-        userId,
-        items: [{ productId, variantId, quantity, price: finalPrice, subtotal }],
-        totalAmount: subtotal,
-        finalAmount: subtotal,
-      });
+    const existingIndex = cart.items.findIndex(item => 
+      item.productId.toString() === productId && 
+      (variantId ? item.variantId?.toString() === variantId : true)
+    );
+
+    if (existingIndex > -1) {
+      cart.items[existingIndex].quantity += quantity;
+      cart.items[existingIndex].subtotal = cart.items[existingIndex].quantity * discountedPrice;
     } else {
-      const existingItem = cart.items.find(
-        (item) =>
-          item.productId.toString() === productId &&
-          (variantId ? item.variantId?.toString() === variantId : true)
-      );
-
-      if (existingItem) {
-        existingItem.quantity += quantity;
-        existingItem.subtotal = existingItem.price * existingItem.quantity;
-      } else {
-        cart.items.push({ productId, variantId, quantity, price: finalPrice, subtotal });
-      }
-
-      cart.totalAmount = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
-      cart.finalAmount = cart.totalAmount;
-
-      await cart.save();
+      cart.items.push({ productId, variantId, quantity, price: discountedPrice, originalPrice: finalPrice, subtotal });
     }
 
-    res.json({ success: true, message: "Item added to cart", cart });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    cart.totalAmount = cart.items.reduce((a, i) => a + i.subtotal, 0);
+    cart.finalAmount = cart.totalAmount;
+    await cart.save();
+
+    const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+    res.status(200).json({ success: true, message: "Added to cart", cart: updatedCart });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// 🗑️ Remove Item from Cart
 export const removeFromCart = async (req, res) => {
   try {
-    const { userId, productId, variantId } = req.body;
+    const userId = req.userId;
+    const { productId, variantId } = req.body;
 
-    const cart = await Cart.findOne({ userId });
-
+    let cart = await Cart.findOne({ userId });
     if (!cart) return res.status(404).json({ success: false, message: "Cart not found" });
 
     cart.items = cart.items.filter(
-      (item) =>
-        !(item.productId.toString() === productId &&
-          (variantId ? item.variantId?.toString() === variantId : true))
+      i => !(i.productId.toString() === productId && (variantId ? i.variantId?.toString() === variantId : true))
     );
 
-    cart.totalAmount = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+    cart.totalAmount = cart.items.reduce((a, i) => a + i.subtotal, 0);
     cart.finalAmount = cart.totalAmount;
-
     await cart.save();
 
-    res.json({ success: true, message: "Item removed from cart", cart });
+    const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+    res.json({ success: true, message: "Item removed", cart: updatedCart });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 🔄 Update Quantity
 export const updateQuantity = async (req, res) => {
   try {
-    const { userId, productId, variantId, quantity } = req.body;
+    const userId = req.userId;
+    const { productId, variantId, quantity } = req.body;
 
-    const cart = await Cart.findOne({ userId });
+    if (quantity <= 0) return res.status(400).json({ success: false, message: "Min quantity is 1" });
+
+    let cart = await Cart.findOne({ userId });
     if (!cart) return res.status(404).json({ success: false, message: "Cart not found" });
 
     const item = cart.items.find(
-      (i) =>
-        i.productId.toString() === productId &&
-        (variantId ? i.variantId?.toString() === variantId : true)
+      i => i.productId.toString() === productId && (variantId ? i.variantId?.toString() === variantId : true)
     );
 
-    if (!item) return res.status(404).json({ success: false, message: "Item not found in cart" });
+    if (!item) return res.status(404).json({ success: false, message: "Item not found" });
 
     item.quantity = quantity;
-    item.subtotal = item.price * quantity;
+    item.subtotal = item.quantity * item.price;
 
-    cart.totalAmount = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+    cart.totalAmount = cart.items.reduce((a, i) => a + i.subtotal, 0);
     cart.finalAmount = cart.totalAmount;
-
     await cart.save();
 
-    res.json({ success: true, message: "Cart updated", cart });
+    const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+    res.json({ success: true, message: "Quantity updated", cart: updatedCart });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 📦 Get User Cart
 export const getCart = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const cart = await Cart.findOne({ userId })
-      .populate({
-        path: "items.productId",
-        select: "name price images offerId",
-        populate: { path: "offerId", select: "name type value validFrom validTo" },
-      })
-      .populate("items.variantId", "name price");
-
-    if (!cart) return res.json({ success: true, cart: { items: [] } });
-
-    res.json({ success: true, cart });
+    const cart = await Cart.findOne({ userId: req.userId }).populate("items.productId");
+    res.json({ success: true, cart: cart || { items: [] } });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

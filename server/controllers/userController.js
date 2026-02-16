@@ -54,7 +54,6 @@ export const register = async (req, res) => {
 };
 
 
-//Login User
 
 export const login = async (req, res) => {
     try {
@@ -80,7 +79,6 @@ export const login = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        // ✅ Send token in cookie
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -88,7 +86,6 @@ export const login = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        // ✅ Return success response
         return res.status(201).json({
             success: true,
             user: {
@@ -117,10 +114,9 @@ export const isAuth=async(req,res)=>{
   }
 }
 
-//logout user
 export const logout=async(req,res)=>{
   try {
-    res.cookie("token", {
+    res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",

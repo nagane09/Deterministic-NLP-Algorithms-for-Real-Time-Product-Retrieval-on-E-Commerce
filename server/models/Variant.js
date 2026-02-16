@@ -8,11 +8,11 @@ const variantSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true, // e.g., "Size", "Weight", "Flavor"
+    required: true,
   },
   value: {
     type: String,
-    required: true, // e.g., "1kg", "500ml", "Chocolate"
+    required: true, 
   },
   price: {
     type: Number,

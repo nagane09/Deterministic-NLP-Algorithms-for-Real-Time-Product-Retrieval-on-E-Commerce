@@ -12,11 +12,11 @@ const categorySchema = new mongoose.Schema({
     trim: true
   },
   image: {
-    type: String, // URL of category image
+    type: String, 
   },
   parentCategory: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Category", // For sub-categories
+    ref: "Category", 
     default: null
   }
 }, { timestamps: true });

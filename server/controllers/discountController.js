@@ -1,12 +1,10 @@
 import Discount from "../models/Discount.js";
 import Product from "../models/Product.js";
 
-// ✅ Add Discount (for multiple products)
 export const addDiscount = async (req, res) => {
   try {
     const { name, type, value, products, validFrom, validTo, minPurchase } = req.body;
 
-    // Validate product IDs exist
     if (!products || products.length === 0) {
       return res.json({ success: false, message: "Please provide at least one product!" });
     }
@@ -16,7 +14,6 @@ export const addDiscount = async (req, res) => {
       return res.json({ success: false, message: "One or more product IDs are invalid!" });
     }
 
-    // Create the discount
     const discount = await Discount.create({
       name,
       type,
@@ -27,7 +24,6 @@ export const addDiscount = async (req, res) => {
       minPurchase,
     });
 
-    // ✅ Update all related products to reference this discount
     await Product.updateMany(
       { _id: { $in: products } },
       { $set: { offerId: discount._id } }
@@ -44,7 +40,6 @@ export const addDiscount = async (req, res) => {
   }
 };
 
-// ✅ Get All Discounts
 export const discountList = async (req, res) => {
   try {
     const discounts = await Discount.find({})
@@ -57,7 +52,6 @@ export const discountList = async (req, res) => {
   }
 };
 
-// ✅ Get Discount by ID
 export const discountById = async (req, res) => {
   try {
     const { id } = req.body;

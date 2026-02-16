@@ -1,58 +1,65 @@
+import mongoose from "mongoose"; 
 import Stripe from "stripe";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import Order from "../models/Order.js";
 import Cart from "../models/Cart.js";
 import User from "../models/User.js";
-import Product from "../models/Product.js";
 import Payment from "../models/Payment.js";
+import Inventory from "../models/Inventory.js";
+import { generateReceiptPdf } from "../utils/generateReceipt.js";
 
 dotenv.config();
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// 🟢 Create Order & Start Stripe Payment
+// ✅ CREATE ORDER
 export const createOrder = async (req, res) => {
   try {
-    const userId = req.user?.id || req.body.userId;
+    const userId = req.userId;
     const { paymentMethod } = req.body;
 
-    // 1️⃣ Find user cart
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
+      return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
-    // 2️⃣ Get user info
+    for (const item of cart.items) {
+      const inventory = await Inventory.findOne({
+        productId: item.productId._id,
+        variantId: item.variantId || null,
+      });
+
+      if (!inventory || inventory.currentStock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${item.productId.name}`,
+        });
+      }
+    }
+
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
-    // 3️⃣ Prepare order items
-    const orderItems = cart.items.map((item) => ({
+    const orderItems = cart.items.map(item => ({
       productId: item.productId._id,
       variantId: item.variantId || null,
       quantity: item.quantity,
       price: item.price,
-      discount: item.discount || 0,
       subtotal: item.subtotal,
     }));
 
-    // 4️⃣ Calculate total
-    const totalAmount = cart.total;
+    const totalAmount = cart.finalAmount;
 
-    // 5️⃣ Create Stripe Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(totalAmount * 100), // in paise
+      amount: Math.round(totalAmount * 100),
       currency: "inr",
-      metadata: { userId, integration_check: "accept_a_payment" },
+      metadata: { userId: userId.toString() },
     });
 
-    // 6️⃣ Create Order in DB
-    const order = new Order({
+    const order = await Order.create({
       userId,
       items: orderItems,
       totalAmount,
-      discountApplied: cart.discountApplied || null,
       paymentMethod: paymentMethod || "Stripe",
       shippingAddress: user.address,
       orderStatus: "Pending",
@@ -60,124 +67,156 @@ export const createOrder = async (req, res) => {
       stripePaymentIntentId: paymentIntent.id,
     });
 
-    await order.save();
-
-    // 7️⃣ Clear cart after creating order
-    await Cart.deleteOne({ userId });
-
-    // 8️⃣ Respond with client secret for frontend
     res.status(201).json({
-      message: "Order created successfully. Proceed to payment.",
+      success: true,
+      message: "Order created",
       clientSecret: paymentIntent.client_secret,
       orderId: order._id,
     });
   } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).json({ message: "Internal Server Error", error });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 🟣 Confirm Payment (Webhook or manual)
-// 🟣 Confirm Payment & Auto-Generate Receipt
 export const confirmPayment = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
   try {
     const { paymentIntentId } = req.body;
-
-    // 1️⃣ Verify payment on Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
     if (paymentIntent.status !== "succeeded") {
-      return res.status(400).json({ message: "Payment not completed" });
+      throw new Error("Payment not completed");
     }
 
-    // 2️⃣ Find related order
-    const order = await Order.findOne({ stripePaymentIntentId: paymentIntentId });
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    const order = await Order.findOne({ stripePaymentIntentId: paymentIntentId }).session(session);
+    if (!order) throw new Error("Order not found");
 
-    // 3️⃣ Mark order as paid
     order.paymentStatus = "Paid";
     order.orderStatus = "Processing";
-    await order.save();
+    await order.save({ session });
 
-    // 4️⃣ Get user
-    const user = await User.findById(order.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    for (const item of order.items) {
+      const updatedInv = await Inventory.findOneAndUpdate(
+        { productId: item.productId, variantId: item.variantId || null },
+        { $inc: { currentStock: -item.quantity } },
+        { session, new: true }
+      );
+      
+      if (!updatedInv || updatedInv.currentStock < 0) {
+        throw new Error(`Inventory sync error for product: ${item.productId}`);
+      }
+    }
 
-    // 5️⃣ Create payment record
-    const payment = new Payment({
+    await Payment.create([{
       userId: order.userId,
       orderId: order._id,
       amount: order.totalAmount,
       method: "Stripe",
-      discountApplied: order.discountApplied || null,
       transactionId: paymentIntent.id,
       status: "Success",
       paidAt: new Date(),
-    });
-    await payment.save();
+    }], { session });
 
-    // 6️⃣ Generate PDF receipt
-    const { filePath } = await generateReceiptPdf({ payment, order, user });
+    await Cart.deleteOne({ userId: order.userId }).session(session);
 
-    // 7️⃣ Send receipt email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    await session.commitTransaction();
+    res.json({ success: true, message: "Payment confirmed and stock updated", order });
 
-    await transporter.sendMail({
-      from: `"Shop Name" <${process.env.SMTP_USER}>`,
-      to: user.email,
-      subject: "Payment Receipt",
-      text: `Hi ${user.name}, here is your payment receipt for order ${order._id}.`,
-      attachments: [
-        {
-          filename: `receipt_${payment._id}.pdf`,
-          path: filePath,
-        },
-      ],
-    });
-
-    // ✅ 8️⃣ Return response
-    return res.status(200).json({
-      message: "Payment confirmed, receipt sent, and order updated successfully.",
-      order,
-      payment,
-    });
   } catch (error) {
-    console.error("Error confirming payment:", error);
-    res.status(500).json({ message: "Error confirming payment", error });
+    await session.abortTransaction();
+    res.status(500).json({ success: false, message: error.message });
+  } finally {
+    session.endSession();
   }
 };
 
-// 🟠 Get All Orders (Admin)
-export const getAllOrders = async (req, res) => {
+export const addToCart = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("userId", "name email")
-      .populate("items.productId", "name price");
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching orders", error });
+    const { productId, variantId, quantity } = req.body;
+    const userId = req.userId;
+
+    const inventory = await Inventory.findOne({ 
+      productId, 
+      variantId: variantId || null 
+    });
+
+    if (!inventory || inventory.currentStock < quantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${inventory ? inventory.currentStock : 0} items left in stock.`,
+      });
+    }
+
+    const product = await Product.findById(productId).populate("offerId");
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    let finalPrice = product.price;
+    if (variantId) {
+      const variant = await Variant.findById(variantId);
+      if (variant) finalPrice = variant.price;
+    }
+
+    let discountAmount = 0;
+    if (product.offerId) {
+      const discount = product.offerId;
+      discountAmount = discount.type === "percentage" 
+        ? (finalPrice * discount.value) / 100 
+        : discount.value;
+    }
+
+    const discountedPrice = Math.max(finalPrice - discountAmount, 0);
+    const subtotal = discountedPrice * quantity;
+
+    let cart = await Cart.findOne({ userId });
+    if (!cart) cart = new Cart({ userId, items: [] });
+
+    const existingIndex = cart.items.findIndex(item => 
+      item.productId.toString() === productId && 
+      (variantId ? item.variantId?.toString() === variantId : true)
+    );
+
+    if (existingIndex > -1) {
+      cart.items[existingIndex].quantity += quantity;
+      cart.items[existingIndex].subtotal = cart.items[existingIndex].quantity * discountedPrice;
+    } else {
+      cart.items.push({ productId, variantId, quantity, price: discountedPrice, originalPrice: finalPrice, subtotal });
+    }
+
+    cart.totalAmount = cart.items.reduce((a, i) => a + i.subtotal, 0);
+    cart.finalAmount = cart.totalAmount;
+    await cart.save();
+
+    res.status(200).json({ success: true, message: "Added to cart", cart });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// 🟢 Get User Orders
 export const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user?.id || req.params.userId;
-    const orders = await Order.find({ userId })
-      .populate("items.productId", "name price")
-      .sort({ createdAt: -1 });
-    res.status(200).json(orders);
+    const orders = await Order.find({ userId: req.userId }).sort({
+      createdAt: -1,
+    });
+    res.json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching user orders", error });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 🔵 Update Order Status (Admin)
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -185,14 +224,12 @@ export const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findByIdAndUpdate(
       orderId,
-      { orderStatus: status, updatedAt: Date.now() },
+      { orderStatus: status },
       { new: true }
     );
 
-    if (!order) return res.status(404).json({ message: "Order not found" });
-
-    res.status(200).json({ message: "Order status updated", order });
+    res.json({ success: true, message: "Order status updated", order });
   } catch (error) {
-    res.status(500).json({ message: "Error updating order status", error });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

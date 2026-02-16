@@ -1,17 +1,14 @@
 import Variant from "../models/Variant.js";
 import Product from "../models/Product.js";
 
-// ✅ Add Variant
 export const addVariant = async (req, res) => {
   try {
     const { productId, name, value, price, sku } = req.body;
 
-    // Validate required fields
     if (!productId || !name || !value || !price) {
       return res.json({ success: false, message: "All fields are required!" });
     }
 
-    // Create variant
     const newVariant = await Variant.create({
       productId,
       name,
@@ -20,7 +17,6 @@ export const addVariant = async (req, res) => {
       sku
     });
 
-    // Push variant reference into Product
     await Product.findByIdAndUpdate(productId, {
       $push: { variants: newVariant._id }
     });
@@ -36,7 +32,6 @@ export const addVariant = async (req, res) => {
   }
 };
 
-// ✅ Get all variants for a product
 export const getVariantsByProduct = async (req, res) => {
   try {
     const { productId } = req.params;

@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
-    // Unique Review ID (auto from MongoDB _id)
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
@@ -27,7 +26,7 @@ const reviewSchema = new mongoose.Schema(
       trim: true,
     },
   },
-  { timestamps: true } // includes createdAt & updatedAt
+  { timestamps: true } 
 );
 
 export default mongoose.model("Review", reviewSchema);

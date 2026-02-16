@@ -15,7 +15,6 @@ const discountSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // 🟢 Discount applies to multiple products (Array of product IDs)
   products: [
     {
       type: mongoose.Schema.Types.ObjectId,

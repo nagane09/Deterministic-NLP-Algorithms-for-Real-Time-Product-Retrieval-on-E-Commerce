@@ -1,13 +1,11 @@
 import { v2 as cloudinary } from "cloudinary";
 import Product from "../models/Product.js";
-
-// ✅ Add Product
+import mongoose from "mongoose";
 export const addProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.productData);
     const images = req.files || [];
 
-    // Upload images to Cloudinary
     const imagesUrl = await Promise.all(
       images.map(async (item) => {
         const result = await cloudinary.uploader.upload(item.path, {
@@ -17,7 +15,6 @@ export const addProduct = async (req, res) => {
       })
     );
 
-    // Create the product
     await Product.create({ ...productData, images: imagesUrl });
 
     res.json({ success: true, message: "Product added successfully!" });
@@ -27,13 +24,12 @@ export const addProduct = async (req, res) => {
   }
 };
 
-// ✅ Get All Products
 export const prodList = async (req, res) => {
   try {
     const products = await Product.find({})
       .populate("categoryId", "name")
       .populate("brandId", "name logo")
-      .populate("variants"); // 👈 NEW: Populate variants
+      .populate("variants"); 
 
     res.json({ success: true, products });
   } catch (error) {
@@ -42,14 +38,13 @@ export const prodList = async (req, res) => {
   }
 };
 
-// ✅ Get Single Product by ID
 export const prodById = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id)
       .populate("categoryId", "name")
       .populate("brandId", "name")
-      .populate("variants"); // 👈 NEW: Populate variants
+      .populate("variants"); 
 
     if (!product) {
       return res.json({ success: false, message: "Product not found" });
@@ -60,4 +55,21 @@ export const prodById = async (req, res) => {
     console.error(error.message);
     res.json({ success: false, message: error.message });
   }
+};
+
+export const getProductsByCategory = async (req, res) => {
+    try {
+        const { categoryId } = req.params;
+
+        const products = await Product.find({ categoryId })
+            .populate("categoryId", "name")
+            .populate("brandId", "name logo") 
+            .populate("variants")
+            .populate("offerId");
+
+        res.json({ success: true, products });
+    } catch (error) {
+        console.error("Error fetching category products:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

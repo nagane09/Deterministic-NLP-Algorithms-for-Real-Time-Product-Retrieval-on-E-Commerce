@@ -26,13 +26,13 @@ const cartSchema = new mongoose.Schema({
       },
       price: {
         type: Number,
-        required: true, // ✅ Final price after discount
+        required: true, 
       },
       originalPrice: {
-        type: Number, // ✅ Base price before discount
+        type: Number,
       },
       discountAmount: {
-        type: Number, // ✅ Amount saved per item
+        type: Number, 
         default: 0,
       },
       discountType: {

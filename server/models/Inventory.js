@@ -9,7 +9,7 @@ const inventorySchema = new mongoose.Schema({
   variantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Variant",
-    default: null // optional, if stock is at product level
+    default: null 
   },
   currentStock: {
     type: Number,
